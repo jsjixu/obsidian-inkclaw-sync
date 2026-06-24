@@ -1,0 +1,10 @@
+{
+  "id": "inkclaw-sync",
+  "name": "InkClaw Sync",
+  "version": "0.3.0",
+  "minAppVersion": "1.4.0",
+  "description": "Sync notes you forwarded to InkClaw (auto-transcribed and polished) into your vault, with media attachments. Works on desktop and mobile.",
+  "author": "InkClaw",
+  "authorUrl": "https://github.com/jsjixu/obsidian-inkclaw-sync",
+  "isDesktopOnly": false
+}

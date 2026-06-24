@@ -1,0 +1,23 @@
+{
+  "name": "inkclaw-sync",
+  "version": "0.1.0",
+  "description": "墨爪 InkClaw Obsidian 同步插件 —— 60s 轮询 /api/v1/notes 写入 vault。",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "test": "node --test \"test/**/*.test.mjs\""
+  },
+  "keywords": ["obsidian-plugin", "inkclaw", "sync"],
+  "author": "InkClaw",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "builtin-modules": "^3.3.0",
+    "esbuild": "^0.20.0",
+    "obsidian": "^1.4.11",
+    "tslib": "^2.6.2",
+    "typescript": "^5.4.0"
+  }
+}
