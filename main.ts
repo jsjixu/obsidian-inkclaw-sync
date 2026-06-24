@@ -26,6 +26,7 @@ interface InkClawSettings {
   token: string;
   targetFolder: string;
   attachmentsFolder: string;
+  autoSync: boolean;
 }
 
 const DEFAULT_SETTINGS: InkClawSettings = {
@@ -33,6 +34,7 @@ const DEFAULT_SETTINGS: InkClawSettings = {
   token: "",
   targetFolder: "InkClaw",
   attachmentsFolder: "attachments",
+  autoSync: true,
 };
 
 const POLL_INTERVAL_MS = 60 * 1000;
@@ -77,15 +79,21 @@ export default class InkClawSyncPlugin extends Plugin {
       },
     });
 
-    // 加载后跑一次(放到 layout ready 之后,确保 vault 可写)。
+    // 加载后跑一次(放到 layout ready 之后,确保 vault 可写)。仅自动同步开启时;
+    // 手动模式下完全靠用户点 ribbon / 命令拉取(多设备共享 vault 时避免后台双写冲突)。
     this.app.workspace.onLayoutReady(() => {
-      void this.runSync(false);
+      if (this.settings.autoSync) {
+        void this.runSync(false);
+      }
     });
 
-    // 每 60s 轮询;registerInterval 让 Obsidian 在卸载时自动清掉。
+    // 每 60s 轮询;registerInterval 让 Obsidian 在卸载时自动清掉。回调内查 autoSync,
+    // 改设置即时生效、无需重载;关掉则只剩手动同步(ribbon/命令/设置页按钮始终可用)。
     this.registerInterval(
       window.setInterval(() => {
-        void this.runSync(false);
+        if (this.settings.autoSync) {
+          void this.runSync(false);
+        }
       }, POLL_INTERVAL_MS)
     );
   }
@@ -401,8 +409,21 @@ class InkClawSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
+      .setName("自动同步")
+      .setDesc(
+        "开:每 60 秒自动拉一次(并在启动时拉)。关:只在你点下面「同步」、左侧图标或命令时才拉 —— " +
+          "多台设备共用同一个 vault(iCloud / Obsidian Sync)时建议关掉,避免后台同时拉取双写、产生冲突副本。"
+      )
+      .addToggle((toggle) =>
+        toggle.setValue(this.plugin.settings.autoSync).onChange(async (value) => {
+          this.plugin.settings.autoSync = value;
+          await this.plugin.saveSettings();
+        })
+      );
+
+    new Setting(containerEl)
       .setName("立即同步")
-      .setDesc("不等 60s 轮询,马上拉一次")
+      .setDesc("马上拉一次最新笔记")
       .addButton((btn) =>
         btn
           .setButtonText("同步")

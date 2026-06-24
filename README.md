@@ -46,14 +46,15 @@ Open **Settings → InkClaw Sync** and fill in:
 | Token | *(empty)* | Your personal sync token |
 | Target folder | `InkClaw` | Where notes are written |
 | Attachments folder | `attachments` | Subfolder for cover images / media |
+| Auto-sync | on | When on, sync runs on startup and every 60 s. Turn **off** to sync only when you click (see below). |
 
-Use **"Test connection"** to verify, then sync runs automatically on startup and every 60 seconds. You can also trigger it from the ribbon icon or the command **"InkClaw: Sync now"**.
+Use **"Test connection"** to verify. With auto-sync on, sync runs automatically on startup and every 60 seconds. You can always trigger it manually from the ribbon icon, the **"InkClaw: Sync now"** command, or the **Sync** button in settings.
 
 ## How syncing works
 
 - The plugin pulls incrementally: it remembers a **cursor** (the highest note id already fetched) and only requests newer notes. A single missing note never blocks the rest of the batch.
 - The cursor lives in each device's own plugin data, so **every device syncs independently** — you do **not** need iCloud or Obsidian Sync. Install it on each device and each one fills its own vault.
-- **If you DO share one vault across devices** (iCloud / Obsidian Sync), enable InkClaw Sync on **only one device** to avoid both devices writing the same files. The other devices will see the notes through your vault sync.
+- **If you DO share one vault across devices** (iCloud / Obsidian Sync), turn **Auto-sync off** and pull manually. Background polling on two devices can write the same files at once and create conflict copies; with auto-sync off, only the device you click on pulls, and the shared cursor means the other device skips notes already fetched. (Alternatively, keep auto-sync on but enable the plugin on only one device.)
 - If a cover image cannot be downloaded (e.g., an expired source URL), the plugin omits that image's embed rather than leaving a broken link — your notes stay clean.
 
 ## Mobile notes
