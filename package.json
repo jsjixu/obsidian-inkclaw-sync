@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-    "test": "node --test test/"
+    "test": "node --test test/*.test.mjs"
   },
   "keywords": ["obsidian-plugin", "inkclaw", "sync"],
   "author": "InkClaw",
