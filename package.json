@@ -1,6 +1,6 @@
 {
   "name": "inkclaw-sync",
-  "version": "0.1.0",
+  "version": "0.6.0",
   "description": "墨爪 InkClaw Obsidian 同步插件 —— 60s 轮询 /api/v1/notes 写入 vault。",
   "main": "main.js",
   "type": "module",
@@ -14,7 +14,6 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.11.0",
-    "builtin-modules": "^3.3.0",
     "esbuild": "^0.20.0",
     "obsidian": "^1.4.11",
     "tslib": "^2.6.2",

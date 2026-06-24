@@ -1,15 +1,17 @@
 name: Release
 
-# Push a tag equal to the manifest version (e.g. 0.3.0) to build and publish a
-# GitHub release with main.js + manifest.json attached as assets (what BRAT and
-# the Obsidian community store consume).
+# Push a tag equal to the manifest version (e.g. 0.6.0) to build and publish a
+# GitHub release with main.js + manifest.json + styles.css attached as assets
+# (what BRAT and the Obsidian community store consume).
 on:
   push:
     tags:
       - "*"
 
 permissions:
-  contents: write
+  contents: write # create the release
+  id-token: write # mint the OIDC token for attestation
+  attestations: write # record build provenance for main.js
 
 jobs:
   release:
@@ -22,10 +24,16 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - name: Attest build provenance for main.js
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: main.js
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
           name: ${{ github.ref_name }}
+          generate_release_notes: true
           files: |
             main.js
             manifest.json
+            styles.css

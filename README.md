@@ -34,7 +34,7 @@ Settings → Community plugins → Browse → search **"InkClaw Sync"** → Inst
 3. Enable **InkClaw Sync** in Community plugins.
 
 ### Manual
-Download `main.js` and `manifest.json` from the [latest release](https://github.com/jsjixu/obsidian-inkclaw-sync/releases/latest) into `<vault>/.obsidian/plugins/inkclaw-sync/`, then enable it.
+Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/jsjixu/obsidian-inkclaw-sync/releases/latest) into `<vault>/.obsidian/plugins/inkclaw-sync/`, then enable it.
 
 ## Setup
 
@@ -48,7 +48,7 @@ Open **Settings → InkClaw Sync** and fill in:
 | Attachments folder | `attachments` | Subfolder for cover images / media |
 | Auto-sync | **off** (manual) | Off: pull only when you click. On: pull on startup and every 60 s. |
 
-**By default, syncing is manual.** After setting your token, pull notes whenever you want with the ribbon **🔄** icon, the **"InkClaw: Sync now"** command, or the **Sync** button in settings. Use **"Test connection"** to confirm your token works. If you'd rather it pull automatically every 60 seconds, turn on **Auto-sync** in settings — best for a single device.
+**By default, syncing is manual.** After setting your token, pull notes whenever you want with the ribbon **🔄** icon, the **"Sync now"** command, or the **Sync** button in settings. Use **"Test connection"** to confirm your token works. If you'd rather it pull automatically every 60 seconds, turn on **Auto-sync** in settings — best for a single device.
 
 ## How syncing works
 

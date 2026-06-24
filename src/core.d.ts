@@ -31,10 +31,10 @@ export type LogLevel = "info" | "warn" | "error";
 /** syncOnce 的注入依赖。所有副作用都从这里进。 */
 export interface SyncDeps {
   fetchJson: (since: number) => Promise<NotesResponse>;
-  downloadMedia: (localName: string, url: string) => Promise<unknown> | unknown;
-  writeNote: (filename: string, markdown: string) => Promise<unknown> | unknown;
+  downloadMedia: (localName: string, url: string) => Promise<void>;
+  writeNote: (filename: string, markdown: string) => Promise<void>;
   readCursor: () => Promise<number> | number;
-  writeCursor: (cursor: number) => Promise<unknown> | unknown;
+  writeCursor: (cursor: number) => Promise<void>;
   log?: (level: LogLevel, msg: string, err?: unknown) => void;
   attachmentsFolder?: string;
   /** 判断某个媒体文件是否已落到附件目录里;返回假 → 其 ![[]] 内嵌会被剔除。可选(未注入则不自愈)。 */

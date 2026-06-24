@@ -42,7 +42,12 @@ const DEFAULT_SETTINGS: InkClawSettings = {
 };
 
 const POLL_INTERVAL_MS = 60 * 1000;
-const CURSOR_KEY = "cursor";
+
+/** plugin data.json 的结构(loadData/saveData 往返)。给 loadData 的 any 一个收窄类型,避免不安全访问。 */
+interface InkClawData {
+  settings?: Partial<InkClawSettings>;
+  cursor?: number;
+}
 
 export default class InkClawSyncPlugin extends Plugin {
   settings: InkClawSettings = DEFAULT_SETTINGS;
@@ -67,8 +72,8 @@ export default class InkClawSyncPlugin extends Plugin {
 
     // 手动触发一次同步的命令(便于调试,不必等 60s)。
     this.addCommand({
-      id: "inkclaw-sync-now",
-      name: "InkClaw: 立即同步",
+      id: "sync-now",
+      name: "立即同步",
       callback: () => {
         void this.runSync(true);
       },
@@ -76,8 +81,8 @@ export default class InkClawSyncPlugin extends Plugin {
 
     // 全量重拉:重置游标为 0 后同步一次,服务端所有笔记会被重新拉取并覆盖写入本地。
     this.addCommand({
-      id: "inkclaw-resync-all",
-      name: "InkClaw: 全量重拉(重置游标)",
+      id: "resync-all",
+      name: "全量重拉(重置游标)",
       callback: () => {
         void this.resyncAll();
       },
@@ -108,7 +113,7 @@ export default class InkClawSyncPlugin extends Plugin {
   /** 首次安装的一次性引导:讲清默认手动同步、怎么拉、怎么改自动。展示后落标记不再弹。 */
   private async showOnboarding(): Promise<void> {
     new Notice(
-      "InkClaw Sync 已启用 · 默认「手动同步」:点左侧 🔄 图标或命令「InkClaw: 立即同步」拉取笔记。" +
+      "InkClaw Sync 已启用 · 默认「手动同步」:点左侧 🔄 图标或命令「立即同步」拉取笔记。" +
         "想每 60 秒自动拉?到 设置 → InkClaw Sync 打开「自动同步」。",
       15000
     );
@@ -117,25 +122,25 @@ export default class InkClawSyncPlugin extends Plugin {
   }
 
   async loadSettings(): Promise<void> {
-    const data = (await this.loadData()) || {};
+    const data = ((await this.loadData()) as InkClawData | null) || {};
     this.settings = Object.assign({}, DEFAULT_SETTINGS, data.settings || {});
   }
 
   async saveSettings(): Promise<void> {
-    const data = (await this.loadData()) || {};
+    const data = ((await this.loadData()) as InkClawData | null) || {};
     data.settings = this.settings;
     await this.saveData(data);
   }
 
   private async readCursor(): Promise<number> {
-    const data = (await this.loadData()) || {};
-    const c = Number(data[CURSOR_KEY]);
+    const data = ((await this.loadData()) as InkClawData | null) || {};
+    const c = Number(data.cursor);
     return Number.isFinite(c) ? c : 0;
   }
 
   private async writeCursor(n: number): Promise<void> {
-    const data = (await this.loadData()) || {};
-    data[CURSOR_KEY] = n;
+    const data = ((await this.loadData()) as InkClawData | null) || {};
+    data.cursor = n;
     await this.saveData(data);
   }
 
@@ -352,15 +357,15 @@ class InkClawSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "墨爪 InkClaw 同步" });
+    new Setting(containerEl).setName("墨爪 InkClaw 同步").setHeading();
 
     // 顶部引导:默认手动,讲清怎么拉 + 怎么改自动。
-    const intro = containerEl.createEl("p");
-    intro.style.color = "var(--text-muted)";
-    intro.setText(
-      "默认「手动同步」:填好 token 后,点下方「同步」按钮、左侧 🔄 图标或命令「InkClaw: 立即同步」即可拉取笔记。" +
-        "想让它每 60 秒自动拉,把下面的「自动同步」打开即可。"
-    );
+    containerEl.createEl("p", {
+      cls: "inkclaw-intro",
+      text:
+        "默认「手动同步」:填好 token 后,点下方「同步」按钮、左侧 🔄 图标或命令「立即同步」即可拉取笔记。" +
+        "想让它每 60 秒自动拉,把下面的「自动同步」打开即可。",
+    });
 
     new Setting(containerEl)
       .setName("API Base")
@@ -395,16 +400,18 @@ class InkClawSettingTab extends PluginSettingTab {
     const connSetting = new Setting(containerEl)
       .setName("连接状态")
       .setDesc("点「测试连接」校验 token 是否有效、能拉到几篇笔记");
-    const connStatusEl = connSetting.descEl.createDiv({ text: "" });
-    connStatusEl.style.marginTop = "4px";
+    const connStatusEl = connSetting.descEl.createDiv({ cls: "inkclaw-conn-status" });
     connSetting.addButton((btn) =>
       btn.setButtonText("测试连接").onClick(async () => {
         connStatusEl.setText("测试中…");
-        connStatusEl.style.color = "var(--text-muted)";
+        connStatusEl.removeClass("is-success", "is-error");
+        connStatusEl.addClass("is-muted");
         const r = await this.plugin.testConnection();
         const manualHint = r.ok && !this.plugin.settings.autoSync ? " —— 手动模式,记得点「同步」拉取" : "";
         connStatusEl.setText(r.message + manualHint);
-        connStatusEl.style.color = r.ok ? "var(--text-success)" : "var(--text-error)";
+        connStatusEl.removeClass("is-muted");
+        connStatusEl.toggleClass("is-success", r.ok);
+        connStatusEl.toggleClass("is-error", !r.ok);
       })
     );
 
@@ -468,7 +475,7 @@ class InkClawSettingTab extends PluginSettingTab {
       .addButton((btn) =>
         btn
           .setButtonText("全量重拉")
-          .setWarning()
+          .setDestructive()
           .onClick(() => {
             void this.plugin.resyncAll();
           })

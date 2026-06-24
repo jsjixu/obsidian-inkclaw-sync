@@ -1,0 +1,21 @@
+/* 墨爪 InkClaw Sync —— 设置页样式。静态样式走 CSS 类(避免内联 style 赋值)。 */
+
+.inkclaw-intro {
+  color: var(--text-muted);
+}
+
+.inkclaw-conn-status {
+  margin-top: var(--size-2-1);
+}
+
+.inkclaw-conn-status.is-muted {
+  color: var(--text-muted);
+}
+
+.inkclaw-conn-status.is-success {
+  color: var(--text-success);
+}
+
+.inkclaw-conn-status.is-error {
+  color: var(--text-error);
+}
