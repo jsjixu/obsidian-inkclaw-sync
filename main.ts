@@ -473,9 +473,12 @@ class InkClawSettingTab extends PluginSettingTab {
       .setName("全量重拉")
       .setDesc("重置游标,把服务端所有笔记重新拉取并覆盖写入(换 vault / 笔记误删时用)")
       .addButton((btn) =>
+        // 注:不用 setDestructive()——它比 manifest 声明的 minAppVersion 1.4.0 新,会触发
+        // obsidianmd/no-unsupported-api 错误。setWarning() 自 1.4.0 起就有(仅被标记 deprecated,
+        // 是非阻断的 Recommendation),保留低 minAppVersion 以兼容旧版 / 手机端。
         btn
           .setButtonText("全量重拉")
-          .setDestructive()
+          .setWarning()
           .onClick(() => {
             void this.plugin.resyncAll();
           })
