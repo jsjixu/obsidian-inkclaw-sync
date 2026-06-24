@@ -27,6 +27,7 @@ interface InkClawSettings {
   targetFolder: string;
   attachmentsFolder: string;
   autoSync: boolean;
+  onboarded: boolean;
 }
 
 const DEFAULT_SETTINGS: InkClawSettings = {
@@ -34,7 +35,10 @@ const DEFAULT_SETTINGS: InkClawSettings = {
   token: "",
   targetFolder: "InkClaw",
   attachmentsFolder: "attachments",
-  autoSync: true,
+  // 默认手动同步:用户自己点才拉。多设备共享 vault 时天然不会后台双写冲突;
+  // 单设备想省心的用户可在设置里打开「自动同步」。
+  autoSync: false,
+  onboarded: false,
 };
 
 const POLL_INTERVAL_MS = 60 * 1000;
@@ -79,9 +83,12 @@ export default class InkClawSyncPlugin extends Plugin {
       },
     });
 
-    // 加载后跑一次(放到 layout ready 之后,确保 vault 可写)。仅自动同步开启时;
-    // 手动模式下完全靠用户点 ribbon / 命令拉取(多设备共享 vault 时避免后台双写冲突)。
+    // 加载后:首次安装给一次性引导(讲清默认手动、怎么拉、怎么改自动);仅自动同步开启时
+    // 才启动拉取,手动模式完全靠用户点 ribbon / 命令(多设备共享 vault 时避免后台双写冲突)。
     this.app.workspace.onLayoutReady(() => {
+      if (!this.settings.onboarded) {
+        void this.showOnboarding();
+      }
       if (this.settings.autoSync) {
         void this.runSync(false);
       }
@@ -96,6 +103,17 @@ export default class InkClawSyncPlugin extends Plugin {
         }
       }, POLL_INTERVAL_MS)
     );
+  }
+
+  /** 首次安装的一次性引导:讲清默认手动同步、怎么拉、怎么改自动。展示后落标记不再弹。 */
+  private async showOnboarding(): Promise<void> {
+    new Notice(
+      "InkClaw Sync 已启用 · 默认「手动同步」:点左侧 🔄 图标或命令「InkClaw: 立即同步」拉取笔记。" +
+        "想每 60 秒自动拉?到 设置 → InkClaw Sync 打开「自动同步」。",
+      15000
+    );
+    this.settings.onboarded = true;
+    await this.saveSettings();
   }
 
   async loadSettings(): Promise<void> {
@@ -336,6 +354,14 @@ class InkClawSettingTab extends PluginSettingTab {
     containerEl.empty();
     containerEl.createEl("h2", { text: "墨爪 InkClaw 同步" });
 
+    // 顶部引导:默认手动,讲清怎么拉 + 怎么改自动。
+    const intro = containerEl.createEl("p");
+    intro.style.color = "var(--text-muted)";
+    intro.setText(
+      "默认「手动同步」:填好 token 后,点下方「同步」按钮、左侧 🔄 图标或命令「InkClaw: 立即同步」即可拉取笔记。" +
+        "想让它每 60 秒自动拉,把下面的「自动同步」打开即可。"
+    );
+
     new Setting(containerEl)
       .setName("API Base")
       .setDesc("后端地址,如 https://inkclaw-cb.elefeed.com")
@@ -376,7 +402,8 @@ class InkClawSettingTab extends PluginSettingTab {
         connStatusEl.setText("测试中…");
         connStatusEl.style.color = "var(--text-muted)";
         const r = await this.plugin.testConnection();
-        connStatusEl.setText(r.message);
+        const manualHint = r.ok && !this.plugin.settings.autoSync ? " —— 手动模式,记得点「同步」拉取" : "";
+        connStatusEl.setText(r.message + manualHint);
         connStatusEl.style.color = r.ok ? "var(--text-success)" : "var(--text-error)";
       })
     );
@@ -411,13 +438,15 @@ class InkClawSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("自动同步")
       .setDesc(
-        "开:每 60 秒自动拉一次(并在启动时拉)。关:只在你点下面「同步」、左侧图标或命令时才拉 —— " +
-          "多台设备共用同一个 vault(iCloud / Obsidian Sync)时建议关掉,避免后台同时拉取双写、产生冲突副本。"
+        "默认关(手动):只在你点「同步」/左侧图标/命令时才拉。多台设备共用同一个 vault" +
+          "(iCloud / Obsidian Sync)时保持关闭,避免后台同时拉取双写、产生冲突副本。\n" +
+          "打开:每 60 秒自动拉一次(并在启动时拉),适合单设备、想完全省心。"
       )
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.autoSync).onChange(async (value) => {
           this.plugin.settings.autoSync = value;
           await this.plugin.saveSettings();
+          new Notice(value ? "InkClaw:已开启自动同步(每 60 秒)" : "InkClaw:已切回手动同步,点「同步」才拉");
         })
       );
 

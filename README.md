@@ -46,15 +46,15 @@ Open **Settings → InkClaw Sync** and fill in:
 | Token | *(empty)* | Your personal sync token |
 | Target folder | `InkClaw` | Where notes are written |
 | Attachments folder | `attachments` | Subfolder for cover images / media |
-| Auto-sync | on | When on, sync runs on startup and every 60 s. Turn **off** to sync only when you click (see below). |
+| Auto-sync | **off** (manual) | Off: pull only when you click. On: pull on startup and every 60 s. |
 
-Use **"Test connection"** to verify. With auto-sync on, sync runs automatically on startup and every 60 seconds. You can always trigger it manually from the ribbon icon, the **"InkClaw: Sync now"** command, or the **Sync** button in settings.
+**By default, syncing is manual.** After setting your token, pull notes whenever you want with the ribbon **🔄** icon, the **"InkClaw: Sync now"** command, or the **Sync** button in settings. Use **"Test connection"** to confirm your token works. If you'd rather it pull automatically every 60 seconds, turn on **Auto-sync** in settings — best for a single device.
 
 ## How syncing works
 
 - The plugin pulls incrementally: it remembers a **cursor** (the highest note id already fetched) and only requests newer notes. A single missing note never blocks the rest of the batch.
 - The cursor lives in each device's own plugin data, so **every device syncs independently** — you do **not** need iCloud or Obsidian Sync. Install it on each device and each one fills its own vault.
-- **If you DO share one vault across devices** (iCloud / Obsidian Sync), turn **Auto-sync off** and pull manually. Background polling on two devices can write the same files at once and create conflict copies; with auto-sync off, only the device you click on pulls, and the shared cursor means the other device skips notes already fetched. (Alternatively, keep auto-sync on but enable the plugin on only one device.)
+- **If you DO share one vault across devices** (iCloud / Obsidian Sync), the default manual mode already handles it: only the device you click on pulls, and the shared cursor means the other device skips notes already fetched, so no background double-writing or conflict copies. Only turn on Auto-sync if you run it on a single device.
 - If a cover image cannot be downloaded (e.g., an expired source URL), the plugin omits that image's embed rather than leaving a broken link — your notes stay clean.
 
 ## Mobile notes
