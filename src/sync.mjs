@@ -1,5 +1,5 @@
 /**
- * 墨爪 InkClaw —— Obsidian 同步插件的纯逻辑核心(零依赖 ES module)。
+ * 墨爪 Inklaw —— Obsidian 同步插件的纯逻辑核心(零依赖 ES module)。
  *
  * 设计要点:本文件**不 import 'obsidian'**,所有副作用(HTTP / 文件写入 / 媒体下载 /
  * 游标读写 / 日志)都经参数注入。这样:

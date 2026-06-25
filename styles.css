@@ -1,4 +1,4 @@
-/* 墨爪 InkClaw Sync —— 设置页样式。静态样式走 CSS 类(避免内联 style 赋值)。 */
+/* 墨爪 Inklaw Sync —— 设置页样式。静态样式走 CSS 类(避免内联 style 赋值)。 */
 
 .inkclaw-intro {
   color: var(--text-muted);

@@ -1,5 +1,5 @@
 /**
- * 墨爪 InkClaw —— Obsidian 同步插件(community plugin)。
+ * 墨爪 Inklaw —— Obsidian 同步插件(community plugin)。
  *
  * 职责:加载时 + 每 60s 轮询后端 `GET /api/v1/notes?since=<cursor>`,把新笔记(连同
  * 媒体附件)写进用户指定的 vault 目录,并按 note id 推进游标(存 plugin data)。
@@ -33,7 +33,7 @@ interface InkClawSettings {
 const DEFAULT_SETTINGS: InkClawSettings = {
   apiBase: "https://inkclaw-cb.elefeed.com",
   token: "",
-  targetFolder: "InkClaw",
+  targetFolder: "Inklaw",
   attachmentsFolder: "attachments",
   // 默认手动同步:用户自己点才拉。多设备共享 vault 时天然不会后台双写冲突;
   // 单设备想省心的用户可在设置里打开「自动同步」。
@@ -66,7 +66,7 @@ export default class InkClawSyncPlugin extends Plugin {
     this.updateStatus();
 
     // 左侧 ribbon 快捷入口:点一下立即同步(等价命令「立即同步」与设置页「同步」按钮)。
-    this.addRibbonIcon("refresh-cw", "InkClaw 同步", () => {
+    this.addRibbonIcon("refresh-cw", "Inklaw 同步", () => {
       void this.runSync(true);
     });
 
@@ -113,8 +113,8 @@ export default class InkClawSyncPlugin extends Plugin {
   /** 首次安装的一次性引导:讲清默认手动同步、怎么拉、怎么改自动。展示后落标记不再弹。 */
   private async showOnboarding(): Promise<void> {
     new Notice(
-      "InkClaw Sync 已启用 · 默认「手动同步」:点左侧 🔄 图标或命令「立即同步」拉取笔记。" +
-        "想每 60 秒自动拉?到 设置 → InkClaw Sync 打开「自动同步」。",
+      "Inklaw Sync 已启用 · 默认「手动同步」:点左侧 🔄 图标或命令「立即同步」拉取笔记。" +
+        "想每 60 秒自动拉?到 设置 → Inklaw Sync 打开「自动同步」。",
       15000
     );
     this.settings.onboarded = true;
@@ -150,20 +150,20 @@ export default class InkClawSyncPlugin extends Plugin {
       return;
     }
     if (this.syncing) {
-      this.statusBarEl.setText("InkClaw: 同步中…");
+      this.statusBarEl.setText("Inklaw: 同步中…");
       return;
     }
     if (!this.settings.token) {
-      this.statusBarEl.setText("InkClaw: 未绑定");
+      this.statusBarEl.setText("Inklaw: 未绑定");
       return;
     }
     if (this.lastSyncTs > 0) {
       const d = new Date(this.lastSyncTs);
       const hh = String(d.getHours()).padStart(2, "0");
       const mm = String(d.getMinutes()).padStart(2, "0");
-      this.statusBarEl.setText("InkClaw · " + hh + ":" + mm + " · 游标 " + this.lastCursor);
+      this.statusBarEl.setText("Inklaw · " + hh + ":" + mm + " · 游标 " + this.lastCursor);
     } else {
-      this.statusBarEl.setText("InkClaw · 就绪(游标 " + this.lastCursor + ")");
+      this.statusBarEl.setText("Inklaw · 就绪(游标 " + this.lastCursor + ")");
     }
   }
 
@@ -195,12 +195,12 @@ export default class InkClawSyncPlugin extends Plugin {
       }
       const j = (resp.json || {}) as { ok?: boolean; note_count?: number };
       if (!j.ok) {
-        return { ok: false, noteCount: 0, message: "响应异常,确认 apiBase 指向 InkClaw 后端" };
+        return { ok: false, noteCount: 0, message: "响应异常,确认 apiBase 指向 Inklaw 后端" };
       }
       const n = Number(j.note_count) || 0;
       return { ok: true, noteCount: n, message: "已绑定 ✓ · 共 " + n + " 篇笔记" };
     } catch (e) {
-      console.error("[InkClaw] 连接测试失败", e);
+      console.error("[Inklaw] 连接测试失败", e);
       return { ok: false, noteCount: 0, message: "网络不可达,检查 apiBase 与网络连接" };
     }
   }
@@ -274,13 +274,13 @@ export default class InkClawSyncPlugin extends Plugin {
   async runSync(manual: boolean): Promise<void> {
     if (this.syncing) {
       if (manual) {
-        new Notice("InkClaw 正在同步中…");
+        new Notice("Inklaw 正在同步中…");
       }
       return;
     }
     if (!this.settings.token || !this.settings.apiBase) {
       if (manual) {
-        new Notice("InkClaw: 请先在设置里填 apiBase 和 token");
+        new Notice("Inklaw: 请先在设置里填 apiBase 和 token");
       }
       return;
     }
@@ -292,7 +292,7 @@ export default class InkClawSyncPlugin extends Plugin {
       if (manual) {
         const probe = await this.testConnection();
         if (!probe.ok) {
-          new Notice("InkClaw: " + probe.message);
+          new Notice("Inklaw: " + probe.message);
           return;
         }
       }
@@ -305,7 +305,7 @@ export default class InkClawSyncPlugin extends Plugin {
         readCursor: () => this.readCursor(),
         writeCursor: (n: number) => this.writeCursor(n),
         log: (level: string, msg: string, err?: unknown) => {
-          const line = "[InkClaw] " + msg;
+          const line = "[Inklaw] " + msg;
           if (level === "error") {
             console.error(line, err || "");
           } else if (level === "warn") {
@@ -320,13 +320,13 @@ export default class InkClawSyncPlugin extends Plugin {
       this.lastSyncTs = Date.now();
       if (manual) {
         const n = after - before;
-        new Notice(n > 0 ? "InkClaw: 同步了 " + n + " 篇新笔记" : "InkClaw: 没有新笔记");
+        new Notice(n > 0 ? "Inklaw: 同步了 " + n + " 篇新笔记" : "Inklaw: 没有新笔记");
       }
     } catch (e) {
-      console.error("[InkClaw] 同步异常", e);
+      console.error("[Inklaw] 同步异常", e);
       if (manual) {
         const msg = e instanceof Error && e.message ? e.message : "同步出错,详见控制台";
-        new Notice("InkClaw: " + msg);
+        new Notice("Inklaw: " + msg);
       }
     } finally {
       this.syncing = false;
@@ -337,11 +337,11 @@ export default class InkClawSyncPlugin extends Plugin {
   /** 全量重拉:重置游标为 0 再同步一次(服务端所有笔记重新写入)。reentrancy 保护。 */
   async resyncAll(): Promise<void> {
     if (this.syncing) {
-      new Notice("InkClaw 正在同步中…");
+      new Notice("Inklaw 正在同步中…");
       return;
     }
     await this.writeCursor(0);
-    new Notice("InkClaw: 已重置游标,开始全量重拉…");
+    new Notice("Inklaw: 已重置游标,开始全量重拉…");
     await this.runSync(true);
   }
 }
@@ -357,7 +357,7 @@ class InkClawSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-    new Setting(containerEl).setName("墨爪 InkClaw 同步").setHeading();
+    new Setting(containerEl).setName("墨爪 Inklaw 同步").setHeading();
 
     // 顶部引导:默认手动,讲清怎么拉 + 怎么改自动。
     containerEl.createEl("p", {
@@ -420,7 +420,7 @@ class InkClawSettingTab extends PluginSettingTab {
       .setDesc("笔记写入的 vault 目录(相对 vault 根)")
       .addText((text) =>
         text
-          .setPlaceholder("InkClaw")
+          .setPlaceholder("Inklaw")
           .setValue(this.plugin.settings.targetFolder)
           .onChange(async (value) => {
             this.plugin.settings.targetFolder = value.trim() || DEFAULT_SETTINGS.targetFolder;
@@ -453,7 +453,7 @@ class InkClawSettingTab extends PluginSettingTab {
         toggle.setValue(this.plugin.settings.autoSync).onChange(async (value) => {
           this.plugin.settings.autoSync = value;
           await this.plugin.saveSettings();
-          new Notice(value ? "InkClaw:已开启自动同步(每 60 秒)" : "InkClaw:已切回手动同步,点「同步」才拉");
+          new Notice(value ? "Inklaw:已开启自动同步(每 60 秒)" : "Inklaw:已切回手动同步,点「同步」才拉");
         })
       );
 
