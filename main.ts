@@ -184,6 +184,7 @@ export default class InkClawSyncPlugin extends Plugin {
         headers: {
           Authorization: "Bearer " + this.settings.token,
           Accept: "application/json",
+          "X-Inklaw-Client": "obsidian",
         },
         throw: false,
       });
@@ -218,6 +219,8 @@ export default class InkClawSyncPlugin extends Plugin {
       headers: {
         Authorization: "Bearer " + (this.settings.token || ""),
         Accept: "application/json",
+        // 标记本次拉取来自 Obsidian 插件 → 后端记 last_obsidian_pull_ts,小程序 sync 页确认「已同步 ✓」
+        "X-Inklaw-Client": "obsidian",
       },
       throw: true,
     });
