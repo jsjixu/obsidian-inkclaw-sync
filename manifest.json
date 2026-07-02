@@ -1,7 +1,7 @@
 {
   "id": "inklaw-sync",
   "name": "Inklaw Sync",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "minAppVersion": "1.4.0",
   "description": "Sync notes you forwarded to Inklaw (auto-transcribed and polished) into your vault, with media attachments. Works on desktop and mobile.",
   "author": "Inklaw",

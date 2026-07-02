@@ -8,7 +8,7 @@ Inklaw ("墨爪") is a WeChat-based note service: you forward a video / article 
 
 This plugin talks to a remote server. Please read this before installing.
 
-- **Server it connects to:** `https://inkclaw-cb.elefeed.com` (configurable in settings).
+- **Server it connects to:** `https://inkclaw-cb.elefeed.com` (fixed; the Inklaw backend).
 - **Authentication:** it sends a personal **sync token** (HTTP `Authorization: Bearer <token>`) that you obtain from your own Inklaw account. You need an Inklaw account for this plugin to do anything.
 - **What is transmitted:**
   - **Outbound:** your sync token (for authentication) and a numeric cursor (the id of the last note you already pulled).
@@ -42,8 +42,7 @@ Open **Settings → Inklaw Sync** and fill in:
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
-| API Base | `https://inkclaw-cb.elefeed.com` | Inklaw backend address |
-| Token | *(empty)* | Your personal sync token |
+| Token | *(empty)* | Your personal sync token (the only thing you need to fill in) |
 | Target folder | `Inklaw` | Where notes are written |
 | Attachments folder | `attachments` | Subfolder for cover images / media |
 | Auto-sync | **off** (manual) | Off: pull only when you click. On: pull on startup and every 60 s. |

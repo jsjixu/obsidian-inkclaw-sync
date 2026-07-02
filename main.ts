@@ -175,7 +175,7 @@ export default class InkClawSyncPlugin extends Plugin {
   async testConnection(): Promise<{ ok: boolean; noteCount: number; message: string }> {
     const base = (this.settings.apiBase || "").replace(/\/+$/, "");
     if (!base || !this.settings.token) {
-      return { ok: false, noteCount: 0, message: "请先填 apiBase 和 token" };
+      return { ok: false, noteCount: 0, message: "请先粘贴 token" };
     }
     try {
       const resp = await requestUrl({
@@ -196,13 +196,13 @@ export default class InkClawSyncPlugin extends Plugin {
       }
       const j = (resp.json || {}) as { ok?: boolean; note_count?: number };
       if (!j.ok) {
-        return { ok: false, noteCount: 0, message: "响应异常,确认 apiBase 指向 Inklaw 后端" };
+        return { ok: false, noteCount: 0, message: "响应异常,请稍后重试" };
       }
       const n = Number(j.note_count) || 0;
       return { ok: true, noteCount: n, message: "已绑定 ✓ · 共 " + n + " 篇笔记" };
     } catch (e) {
       console.error("[Inklaw] 连接测试失败", e);
-      return { ok: false, noteCount: 0, message: "网络不可达,检查 apiBase 与网络连接" };
+      return { ok: false, noteCount: 0, message: "网络不可达,请检查网络连接" };
     }
   }
 
@@ -283,7 +283,7 @@ export default class InkClawSyncPlugin extends Plugin {
     }
     if (!this.settings.token || !this.settings.apiBase) {
       if (manual) {
-        new Notice("Inklaw: 请先在设置里填 apiBase 和 token");
+        new Notice("Inklaw: 请先在设置里填 token");
       }
       return;
     }
@@ -370,19 +370,8 @@ class InkClawSettingTab extends PluginSettingTab {
         "想让它每 60 秒自动拉,把下面的「自动同步」打开即可。",
     });
 
-    new Setting(containerEl)
-      .setName("API Base")
-      .setDesc("后端地址,如 https://inkclaw-cb.elefeed.com")
-      .addText((text) =>
-        text
-          .setPlaceholder("https://inkclaw-cb.elefeed.com")
-          .setValue(this.plugin.settings.apiBase)
-          .onChange(async (value) => {
-            this.plugin.settings.apiBase = value.trim();
-            await this.plugin.saveSettings();
-          })
-      );
-
+    // 后端地址(apiBase)固定为 https://inkclaw-cb.elefeed.com(见 DEFAULT_SETTINGS),
+    // 用户无需、也无处需要填写,故不在设置里露出——只让用户粘一个 token 即可。
     new Setting(containerEl)
       .setName("Token")
       .setDesc("你的 Bearer token(请求头 Authorization: Bearer <token>)")
